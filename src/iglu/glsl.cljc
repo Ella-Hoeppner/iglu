@@ -9,7 +9,7 @@
     (cond
       (number? fn-name) ::number
       ('#{? if} fn-name) ::inline-conditional
-      ('#{+ - * / < > <= >= == != || && "^^"} fn-name) ::operator
+      ('#{+ - * / % < > <= >= == != || && "^^"} fn-name) ::operator
       ('#{= += -= *= "/="} fn-name) ::assignment
       (#{"if" "else if" "switch" "for" "while"} fn-name) ::block-with-expression
       (string? fn-name) ::block

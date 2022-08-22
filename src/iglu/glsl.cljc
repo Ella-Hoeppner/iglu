@@ -36,19 +36,19 @@
     (throw (ex-info (str fn-name " requires 2 args") {})))
   (let [[sym val] args]
     (str
-      (-> fn-name str (subs 1))
-      " "
-      (->subexpression sym)
-      " = "
-      (->subexpression val))))
+     (-> fn-name str (subs 1))
+     " "
+     (->subexpression sym)
+     " = "
+     (->subexpression val))))
 
 (defmethod ->function-call ::block-with-expression [fn-name args]
   (when (< (count args) 1)
     (throw (ex-info (str fn-name " requires 1 arg") {})))
   (let [[condition & body] args]
     (cond-> (str fn-name " " (->subexpression condition))
-            (seq body)
-            (cons (mapv ->statement body)))))
+      (seq body)
+      (cons (mapv ->statement body)))))
 
 (defmethod ->function-call ::block [fn-name args]
   (when (< (count args) 1)
@@ -60,9 +60,9 @@
     (throw (ex-info (str fn-name " requires 3 args") {})))
   (let [[condition true-case false-case] args]
     (str
-      (->subexpression condition)
-      " ? " (->subexpression true-case)
-      " : " (->subexpression false-case))))
+     (->subexpression condition)
+     " ? " (->subexpression true-case)
+     " : " (->subexpression false-case))))
 
 (defmethod ->function-call ::operator [fn-name args]
   (str/join (str " " fn-name " ") (mapv ->subexpression args)))
@@ -141,21 +141,21 @@
   (if-let [{:keys [in out]} (get signatures name)]
     (let [_ (when (not= (count in) (count args))
               (throw (ex-info "Function has args signature of a different length than its args definition"
-                       {:fn name
-                        :signature in
-                        :definition args})))
+                              {:fn name
+                               :signature in
+                               :definition args})))
           args-list (str/join ", "
-                      (mapv (fn [type name]
-                              (str type " " name))
-                        in args))
+                              (mapv (fn [type name]
+                                      (str type " " name))
+                                    in args))
           signature (str out " " name "(" args-list ")")]
       (into [signature]
-        (let [body-lines (mapv ->statement body)]
-          (if (= 'void out)
-            body-lines
-            (conj
-              (vec (butlast body-lines))
-              (str "return " (last body-lines)))))))
+            (let [body-lines (mapv ->statement body)]
+              (if (= 'void out)
+                body-lines
+                (conj
+                 (vec (butlast body-lines))
+                 (str "return " (last body-lines)))))))
     (throw (ex-info "Nothing found in :signatures for function" {:fn name}))))
 
 ;; compiler fn
@@ -185,11 +185,11 @@
   (->> functions
        seq
        (sort-by first
-         (fn [a b]
-           (cond
-             (contains? (fn-deps a) b) 1
-             (contains? (fn-deps b) a) -1
-             :else 0)))))
+                (fn [a b]
+                  (cond
+                    (contains? (fn-deps a) b) 1
+                    (contains? (fn-deps b) a) -1
+                    :else 0)))))
 
 (defn iglu->glsl [{:keys [version precision
                           uniforms attributes varyings inputs outputs
@@ -197,15 +197,15 @@
                    :as shader}]
   (let [[fn-kind fn-val] functions]
     (->> (cond-> []
-                 version (conj (str "#version " version))
-                 precision (conj (str "precision " precision))
-                 uniforms (into (mapv ->uniform uniforms))
-                 attributes (into (mapv ->attribute attributes))
-                 varyings (into (mapv ->varying varyings))
-                 inputs (into (mapv ->in inputs))
-                 outputs (into (mapv ->out outputs))
-                 (= fn-kind :iglu) (into (mapv (partial ->function signatures)
-                                           (sort-fns fn-val fn-deps))))
+           version (conj (str "#version " version))
+           precision (conj (str "precision " precision))
+           uniforms (into (mapv ->uniform uniforms))
+           attributes (into (mapv ->attribute attributes))
+           varyings (into (mapv ->varying varyings))
+           inputs (into (mapv ->in inputs))
+           outputs (into (mapv ->out outputs))
+           (= fn-kind :iglu) (into (mapv (partial ->function signatures)
+                                         (sort-fns fn-val fn-deps))))
          (reduce (partial stringify 0) [])
          (str/join \newline)
          ((fn [output]
